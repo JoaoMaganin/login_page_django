@@ -5,7 +5,10 @@ from django.contrib import messages
 
 from django.contrib.auth import authenticate, login, logout
 
+from django.contrib.auth.decorators import login_required
 
+
+@login_required(login_url='login')
 def index(request):
     context = {}
     return render(request, 'index.html', context)
@@ -39,6 +42,10 @@ def logar(request):
         if user is not None:
             login(request, user)
             return redirect('index')
+        else:
+            messages.info(request, 'Usuário ou senha incorreto(s)')
+    return render(request, 'login.html')
 
-    context = {}
-    return render(request, 'login.html', context)
+
+def logout_user(request):
+    return redirect('index')
