@@ -15,36 +15,41 @@ def index(request):
 
 
 def registrar(request):
-    form = CreateUserForm()
+    if request.user.is_authenticated:
+        return redirect('index')
+    else:
+        form = CreateUserForm()
 
-    if request.method == 'POST':
-        form = CreateUserForm(request.POST)
-        if form.is_valid():
-            form.save()
-            user = form.cleaned_data.get('username')
-            messages.success(request, f'Conta {user} criada com sucesso')
-            return redirect('login')
+        if request.method == 'POST':
+            form = CreateUserForm(request.POST)
+            if form.is_valid():
+                form.save()
+                user = form.cleaned_data.get('username')
+                messages.success(request, f'Conta {user} criada com sucesso')
+                return redirect('login')
 
-    context = {
-        'form': form,
-    }
-    return render(request, 'registrar.html', context)
+        context = {
+            'form': form,
+        }
+        return render(request, 'registrar.html', context)
 
 
 def logar(request):
+    if request.user.is_authenticated:
+        return redirect('index')
+    else:
+        if request.method == 'POST':
+            username = request.POST.get('username')
+            password = request.POST.get('password')
 
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
+            user = authenticate(request, username=username, password=password)
 
-        user = authenticate(request, username=username, password=password)
-
-        if user is not None:
-            login(request, user)
-            return redirect('index')
-        else:
-            messages.info(request, 'Usuário ou senha incorreto(s)')
-    return render(request, 'login.html')
+            if user is not None:
+                login(request, user)
+                return redirect('index')
+            else:
+                messages.info(request, 'Usuário ou senha incorreto(s)')
+        return render(request, 'login.html')
 
 
 def logout_user(request):
